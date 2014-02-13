@@ -28,7 +28,7 @@ SerialPort.open(ARGV[0], 9600, 8, 1, SerialPort::NONE) do |port|
   sleep 2
 
   while true
-    status = "+#{get_unpushed_commits}-#{get_unmerged_commits}"
+    status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
     branch_length = 19 - status.length
     branch = get_branch[0, branch_length].ljust(branch_length)
     message = "#{branch} #{status}"
