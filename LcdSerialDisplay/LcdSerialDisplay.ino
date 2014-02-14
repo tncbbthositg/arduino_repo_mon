@@ -31,11 +31,11 @@ void loop()
     lcd.noBacklight();
   
   if (Serial.available()) {
-    time = millis();
-    lcd.backlight();
-
     // wait a bit for the entire message to arrive
     delay(100);
+
+    time = millis();
+    lcd.backlight();
 
     if (currentLine > 3) {
       lcd.clear();
