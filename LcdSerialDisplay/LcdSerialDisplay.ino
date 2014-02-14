@@ -22,10 +22,18 @@ void setup()
 
 int currentLine = 0;
 int currentColumn = 0;
+unsigned long time = millis();
 
 void loop()
 {
+  unsigned long timeSinceLast = millis() - time;
+  if (timeSinceLast / 1000 > 60)
+    lcd.noBacklight();
+  
   if (Serial.available()) {
+    time = millis();
+    lcd.backlight();
+
     // wait a bit for the entire message to arrive
     delay(100);
 
