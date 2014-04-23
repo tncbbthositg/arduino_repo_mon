@@ -1,4 +1,6 @@
 require 'serialport'
+require 'io/console'
+require 'listen'
 
 def get_branch
   `git rev-parse --abbrev-ref HEAD 2>/dev/null`.strip
@@ -24,10 +26,20 @@ def get_last_commit(user_name)
   `git log --author="#{user_name}" --pretty=format:%cr -1 2>/dev/null` || 'never'
 end
 
-SerialPort.open(ARGV[0], 9600, 8, 1, SerialPort::NONE) do |port|
-  sleep 2
+def with_port
+  if ARGV[0].nil? || ARGV[0].empty?
+    yield IO.console
+    
+  else
+    SerialPort.open(ARGV[0], 9600, 8, 1, SerialPort::NONE) do |port|
+      sleep 2
+      yield port
+    end
+  end
+end
 
-  while true
+with_port do |port|
+  listener = Listen.to(Dir.pwd) do |modified, added, removed|
     status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
     branch_length = 19 - status.length
     branch = get_branch[0, branch_length].ljust(branch_length)
@@ -42,6 +54,8 @@ SerialPort.open(ARGV[0], 9600, 8, 1, SerialPort::NONE) do |port|
     port.print "#{change_count} #{last_commit}\n\n"
 
     port.print "#{user_name[0..20].center(20)}\n"
-    sleep 10
   end
+
+  listener.start # not blocking
+  sleep
 end
