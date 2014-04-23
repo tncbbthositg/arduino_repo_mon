@@ -57,7 +57,8 @@ with_port do |port|
     directory = File.dirname directory
     directory = get_root_directory(directory)
     
-    return if directory.nil?
+    puts "Changes in: #{directory}"
+    return if directory.nil? || directory.empty?
 
     Dir.chdir(directory) do
       status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
