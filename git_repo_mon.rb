@@ -2,6 +2,10 @@ require 'serialport'
 require 'io/console'
 require 'listen'
 
+def get_root_directory
+  `git rev-parse --show-toplevel 2>/dev/null`
+end
+
 def get_branch
   `git rev-parse --abbrev-ref HEAD 2>/dev/null`.strip
 end
@@ -38,8 +42,17 @@ def with_port
   end
 end
 
+def ignored_directories
+  directories = Listen::Silencer::DEFAULT_IGNORED_DIRECTORIES
+    .reject{|filter| filter == '.git'}
+    .map{|e| Regexp.escape(e)}
+    .join('|')
+    
+    %r{^(?:#{directories})(/|$)}
+end
+
 with_port do |port|
-  listener = Listen.to(Dir.pwd) do |modified, added, removed|
+  listener = Listen.to(Dir.pwd, ignore!: ignored_directories) do |modified, added, removed|
     status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
     branch_length = 19 - status.length
     branch = get_branch[0, branch_length].ljust(branch_length)
