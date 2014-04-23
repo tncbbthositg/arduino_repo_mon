@@ -2,8 +2,8 @@ require 'serialport'
 require 'io/console'
 require 'listen'
 
-def get_root_directory
-  `git rev-parse --show-toplevel 2>/dev/null`
+def get_root_directory directory
+  Dir.chdir(directory) { `git rev-parse --show-toplevel 2>/dev/null` }.strip
 end
 
 def get_branch
@@ -53,20 +53,28 @@ end
 
 with_port do |port|
   listener = Listen.to(Dir.pwd, ignore!: ignored_directories) do |modified, added, removed|
-    status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
-    branch_length = 19 - status.length
-    branch = get_branch[0, branch_length].ljust(branch_length)
-    message = "#{branch} #{status}"
-    port.print "#{message}\n"
+    directory = removed.concat(added).concat(modified).last
+    directory = File.dirname directory
+    directory = get_root_directory(directory)
+    
+    return if directory.nil?
 
-    user_name = get_user_name
+    Dir.chdir(directory) do
+      status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
+      branch_length = 19 - status.length
+      branch = get_branch[0, branch_length].ljust(branch_length)
+      message = "#{branch} #{status}"
+      port.print "#{message}\n"
 
-    last_commit = get_last_commit user_name
-    change_count = get_changed_file_count.to_s.ljust(18 - last_commit.length)
-    port.write 0x3.chr
-    port.print "#{change_count} #{last_commit}\n\n"
+      user_name = get_user_name
 
-    port.print "#{user_name[0..20].center(20)}\n"
+      last_commit = get_last_commit user_name
+      change_count = get_changed_file_count.to_s.ljust(18 - last_commit.length)
+      port.write 0x3.chr
+      port.print "#{change_count} #{last_commit}\n\n"
+
+      port.print "#{user_name[0..20].center(20)}\n"
+    end
   end
 
   listener.start # not blocking
