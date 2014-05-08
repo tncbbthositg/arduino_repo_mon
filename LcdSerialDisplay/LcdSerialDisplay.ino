@@ -27,7 +27,7 @@ unsigned long time = millis();
 void loop()
 {
   unsigned long timeSinceLast = millis() - time;
-  if (timeSinceLast / 1000 > 60)
+  if (timeSinceLast / 1000 > 300)
     lcd.noBacklight();
   
   if (Serial.available()) {

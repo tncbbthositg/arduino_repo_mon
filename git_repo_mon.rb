@@ -62,15 +62,19 @@ end
 
 with_port do |port|
   listener = Listen.to(Dir.pwd, ignore!: ignored_directories) do |modified, added, removed|
+    sleep 0.5
+    
     directory = removed.concat(added).concat(modified).last
     directory = File.dirname directory
     directory = get_root_directory(directory)
-    
     next if directory.nil? || directory.empty?
-    puts "Changes in: #{directory}"
 
     Dir.chdir(directory) do
+      folder = Dir.pwd.split(File::SEPARATOR).last
+      port.print "#{folder[0..20].center(20)}"
+
       status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
+      
       branch_length = 19 - status.length
       branch = get_branch[0, branch_length].ljust(branch_length)
       message = "#{branch} #{status}"
@@ -81,7 +85,7 @@ with_port do |port|
       last_commit = get_last_commit user_name
       change_count = get_changed_file_count.to_s.ljust(18 - last_commit.length)
       port.write 0x3.chr
-      port.print "#{change_count} #{last_commit}\n\n"
+      port.print "#{change_count} #{last_commit}\n"
 
       port.print "#{user_name[0..20].center(20)}\n"
     end
