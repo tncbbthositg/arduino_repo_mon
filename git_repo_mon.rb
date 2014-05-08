@@ -62,8 +62,6 @@ end
 
 with_port do |port|
   listener = Listen.to(Dir.pwd, ignore!: ignored_directories) do |modified, added, removed|
-    sleep 0.5
-    
     directory = removed.concat(added).concat(modified).last
     directory = File.dirname directory
     directory = get_root_directory(directory)
