@@ -3,6 +3,15 @@ require 'io/console'
 require 'listen'
 
 def get_root_directory directory
+  Dir.chdir(directory) do 
+    `git rev-parse`
+    return nil unless $?
+    
+    if `git rev-parse --is-inside-git-dir 2>/dev/null`.strip == 'true'
+      return get_root_directory directory + '/..'
+    end
+  end
+  
   Dir.chdir(directory) { `git rev-parse --show-toplevel 2>/dev/null` }.strip
 end
 
@@ -57,8 +66,8 @@ with_port do |port|
     directory = File.dirname directory
     directory = get_root_directory(directory)
     
+    next if directory.nil? || directory.empty?
     puts "Changes in: #{directory}"
-    return if directory.nil? || directory.empty?
 
     Dir.chdir(directory) do
       status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
