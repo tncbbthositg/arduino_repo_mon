@@ -69,13 +69,14 @@ with_port do |port|
 
     Dir.chdir(directory) do
       folder = Dir.pwd.split(File::SEPARATOR).last
-      port.print "#{folder[0..20].center(20)}"
+      sleep 0.05
+      port.print "#{folder[0..20].center(20)}\n"
 
       status = "u+#{get_unpushed_commits}-#{get_unmerged_commits}"
-      
       branch_length = 19 - status.length
       branch = get_branch[0, branch_length].ljust(branch_length)
       message = "#{branch} #{status}"
+      sleep 0.05
       port.print "#{message}\n"
 
       user_name = get_user_name
@@ -83,8 +84,10 @@ with_port do |port|
       last_commit = get_last_commit user_name
       change_count = get_changed_file_count.to_s.ljust(18 - last_commit.length)
       port.write 0x3.chr
+      sleep 0.05
       port.print "#{change_count} #{last_commit}\n"
 
+      sleep 0.05
       port.print "#{user_name[0..20].center(20)}\n"
     end
   end
