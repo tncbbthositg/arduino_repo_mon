@@ -61,8 +61,11 @@ def ignored_directories
 end
 
 with_port do |port|
-  listener = Listen.to(Dir.pwd, ignore!: ignored_directories) do |modified, added, removed|
-    directory = removed.concat(added).concat(modified).last
+  monitor_folder = File.expand_path(ARGV[1] || '.', Dir.pwd)
+  puts "Monitoring #{monitor_folder}"
+  
+  listener = Listen.to(monitor_folder, ignore!: ignored_directories) do |modified, added, removed|
+    puts directory = removed.concat(added).concat(modified).last
     directory = File.dirname directory
     directory = get_root_directory(directory)
     next if directory.nil? || directory.empty?
@@ -80,7 +83,6 @@ with_port do |port|
       port.print "#{message}\n"
 
       user_name = get_user_name
-
       last_commit = get_last_commit user_name
       change_count = get_changed_file_count.to_s.ljust(18 - last_commit.length)
       port.write 0x3.chr
