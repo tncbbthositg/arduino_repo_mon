@@ -65,7 +65,7 @@ with_port do |port|
   puts "Monitoring #{monitor_folder}"
   
   listener = Listen.to(monitor_folder, ignore!: ignored_directories) do |modified, added, removed|
-    puts directory = removed.concat(added).concat(modified).last
+    directory = removed.concat(added).concat(modified).last
     directory = File.dirname directory
     directory = get_root_directory(directory)
     next if directory.nil? || directory.empty?
